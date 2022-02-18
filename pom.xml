@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                  
+  
+  
+  
+  
+  
+  
+  <modelVersion>4.0.0</modelVersion>
+                  
+  
+  
+  
+  
+  
+  
+  <groupId>cm.workorder</groupId>
+                  
+  
+  
+  
+  
+  
+  
+  <artifactId>workorder-service</artifactId>
+                  
+  
+  
+  
+  
+  
+  
+  <version>1.0-SNAPSHOT</version>
+                  
+  
+  
+  
+  
+  
+  
+  <packaging>pom</packaging>
+                  
+  
+  
+  
+  
+  
+  
+  <name>workorder-service</name>
+                  
+  
+  
+  
+  
+  
+  
+  <url>http://maven.apache.org</url>
+                  
+  
+  
+  
+  
+  
+  
+  <parent>
+                                    
+    
+    
+    
+    
+    
+    
+    <artifactId>hummer-boot-starter</artifactId>
+                                    
+    
+    
+    
+    
+    
+    
+    <groupId>com.hummer</groupId>
+                                    
+    
+    
+    
+    
+    
+    
+    <version>1.0.0-SNAPSHOT</version>
+                                
+  
+  
+  
+  
+  
+  
+  </parent>
+                  
+  
+  
+  
+  
+  
+  
+  <description>workorder-service project for Spring Boot</description>
+                  
+  
+  
+  
+  
+  
+  
+  <!--microsoft repository-->
+                  
+  
+  
+  
+  
+  
+  
+  <distributionManagement>
+                                    
+    
+    
+    
+    
+    
+    
+    <repository>
+                                                      
+      
+      
+      
+      
+      
+      
+      <id>StoreMobileApp</id>
+                                                      
+      
+      
+      
+      
+      
+      
+      <url>https://pkgs.dev.azure.com/MSCNStore/6affd13e-1c55-473b-8336-431dab8f2e21/_packaging/StoreMobileApp/maven/v1/</url>
+                                                  
+    
+    
+    
+    
+    
+    
+    </repository>
+                                
+  
+  
+  
+  
+  
+  
+  </distributionManagement>
+                  
+  
+  
+  
+  
+  
+  
+  <properties>
+                                    
+    
+    
+    
+    
+    
+    
+    <java.version>11</java.version>
+                                    
+    
+    
+    
+    
+    
+    
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+                                    
+    
+    
+    
+    
+    
+    
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+                                    
+    
+    
+    
+    
+    
+    
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+                                    
+    
+    
+    
+    
+    
+    
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+                                    
+    
+    
+    
+    
+    
+    
+    <unit-tests.skip>false</unit-tests.skip>
+                                    
+    
+    
+    
+    
+    
+    
+    <integration-tests.skip>false</integration-tests.skip>
+                                    
+    
+    
+    
+    
+    
+    
+    <unit-tests.skip>false</unit-tests.skip>
+                                    
+    
+    
+    
+    
+    
+    
+    <integration-tests.skip>false</integration-tests.skip>
+                                    
+    
+    
+    
+    
+    
+    
+    <hummer.version>1.0.0-SNAPSHOT</hummer.version>
+                                    
+    
+    
+    
+    
+    
+    
+    <business.version>1.0-SNAPSHOT</business.version>
+                                
+  
+  
+  
+  
+  
+  
+  </properties>
+                  
+  
+  
+  
+  
+  
+  
+  <dependencyManagement>
+                                    
+    
+    
+    
+    
+    
+    
+    <dependencies>
+                                                      
+      
+      
+      
+      
+      
+      
+      <dependency>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <groupId>cm.workorder</groupId>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <artifactId>workorder-service-domain</artifactId>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <version>${business.version}</version>
+                                                                    
+      
+      
+      
+      
+      
+      
+      </dependency>
+                                                      
+      
+      
+      
+      
+      
+      
+      <dependency>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <groupId>cm.workorder</groupId>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <artifactId>workorder-service-integration</artifactId>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <version>${business.version}</version>
+                                                                    
+      
+      
+      
+      
+      
+      
+      </dependency>
+                                                      
+      
+      
+      
+      
+      
+      
+      <dependency>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <groupId>cm.workorder</groupId>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <artifactId>workorder-service-dao</artifactId>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <version>${business.version}</version>
+                                                                    
+      
+      
+      
+      
+      
+      
+      </dependency>
+                                                      
+      
+      
+      
+      
+      
+      
+      <dependency>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <groupId>cm.workorder</groupId>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <artifactId>workorder-service-facade</artifactId>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <version>${business.version}</version>
+                                                                    
+      
+      
+      
+      
+      
+      
+      </dependency>
+                                                      
+      
+      
+      
+      
+      
+      
+      <dependency>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <groupId>cm.workorder</groupId>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <artifactId>workorder-service</artifactId>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <version>${business.version}</version>
+                                                                    
+      
+      
+      
+      
+      
+      
+      </dependency>
+                                                      
+      
+      
+      
+      
+      
+      
+      <dependency>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <groupId>cm.workorder</groupId>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <artifactId>workorder-service-support</artifactId>
+                                                                        
+        
+        
+        
+        
+        
+        
+        <version>${business.version}</version>
+                                                                    
+      
+      
+      
+      
+      
+      
+      </dependency>
+                                                  
+    
+    
+    
+    
+    
+    
+    </dependencies>
+                                
+  
+  
+  
+  
+  
+  
+  </dependencyManagement>
+              
+  
+  
+  
+  
+  
+  
+  <modules>
+                              
+    
+    
+    
+    
+    
+    
+    <module>workorder-service-api</module>
+                              
+    
+    
+    
+    
+    
+    
+    <module>workorder-service-domain</module>
+                          
+    
+    
+    
+    
+    
+    <module>workorder-service-dao</module>
+                      
+    
+    
+    
+    
+    <module>workorder-service-facade</module>
+                  
+    
+    
+    
+    <module>workorder-service-support</module>
+              
+    
+    
+    <module>workorder-service-integration</module>
+          
+    
+    <module>workorder-service-test</module>
+      
+  </modules>
+            
+
+
+
+
+
+</project>
