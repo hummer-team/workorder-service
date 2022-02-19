@@ -23,4 +23,16 @@
             <artifactId>hummer-dao</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.hummer</groupId>
+                <artifactId>hummer-model-generator-plugin</artifactId>
+                <configuration>
+                    <configPath>/generatorConfig.xml</configPath>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
