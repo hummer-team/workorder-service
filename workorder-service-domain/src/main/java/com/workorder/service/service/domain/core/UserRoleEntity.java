@@ -13,10 +13,10 @@ public class UserRoleEntity {
     private final Map<RoleEnum, List<OpEnum>> roleOpMap = new ConcurrentHashMap<>();
 
     {
-        roleOpMap.put(RoleEnum.DEVELOP, Lists.newArrayList(OpEnum.SUBMIT_WORK_ORDER, OpEnum.VIEW_WORK_ORDER));
+        roleOpMap.put(RoleEnum.DEVELOP, Lists.newArrayList(OpEnum.SUBMIT_WORK_ORDER, OpEnum.VIEW_WORK_ORDER, OpEnum.CANCEL_WORK_ORDER));
         roleOpMap.put(RoleEnum.EXECUTE, Lists.newArrayList(OpEnum.EXECUTE_WORK_ORDER, OpEnum.VIEW_WORK_ORDER));
         roleOpMap.put(RoleEnum.APPROVE, Lists.newArrayList(OpEnum.APPROVE_WORK_ORDER, OpEnum.VIEW_WORK_ORDER));
-        roleOpMap.put(RoleEnum.ADMINISTRATOR, Lists.newArrayList(OpEnum.ALL, OpEnum.ADMIN_WORK_ORDER, OpEnum.VIEW_WORK_ORDER));
+        roleOpMap.put(RoleEnum.ADMINISTRATOR, Lists.newArrayList(OpEnum.VIEW_WORK_ORDER));
     }
 
     public UserRoleEntity(RoleEnum roleEnum) {

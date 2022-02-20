@@ -31,6 +31,7 @@ public class WorkerOrderService {
         WorkOrder workOrder = ObjectCopyUtils.copy(req, WorkOrder.class);
         workOrder.setSubmitUserId(Integer.parseInt(userContext.getUserId()));
         workOrder.setSubmitUser(userContext.getUserName());
+        workOrder.setStatus(status.getCode());
         workOrderMapper.insert(workOrder);
 
         WorkOrderHandlerFlow flow = new WorkOrderHandlerFlow();
@@ -44,5 +45,15 @@ public class WorkerOrderService {
         flow.setHandlerBatchId(DateUtil.formatNowDate(DateUtil.DateTimeFormat.F7.getValue()));
         handlerFlowMapper.insert(flow);
         return workOrder;
+    }
+
+    @TargetDataSourceTM(timeout = 30, transactionManager = "workflow_TM", rollbackFor = Throwable.class
+            , dbName = "workflow")
+    public void handlerStatus(WorkOrderHandlerFlow updateStatus, WorkOrderHandlerFlow nextStatus) {
+        handlerFlowMapper.updateStatusByPrimaryKey(updateStatus);
+        workOrderMapper.updateWorkOrderStatus(updateStatus.getWorkOrderId(), updateStatus.getStatus());
+        if (nextStatus != null) {
+            handlerFlowMapper.insert(nextStatus);
+        }
     }
 }

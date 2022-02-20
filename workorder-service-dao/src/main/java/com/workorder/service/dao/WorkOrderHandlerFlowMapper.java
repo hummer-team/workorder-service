@@ -47,5 +47,5 @@ public interface WorkOrderHandlerFlowMapper {
      *
      * @mbg.generated
      */
-    int updateByPrimaryKey(WorkOrderHandlerFlow record);
+    int updateStatusByPrimaryKey(WorkOrderHandlerFlow record);
 }

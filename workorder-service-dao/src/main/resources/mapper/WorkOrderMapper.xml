@@ -35,6 +35,7 @@
         <result column="submit_user" jdbcType="VARCHAR" property="submitUser"/>
         <result column="name" jdbcType="VARCHAR" property="templateName"/>
         <result column="project_code" jdbcType="VARCHAR" property="projectCode"/>
+        <result column="status1" jdbcType="INTEGER" property="status"/>
 
         <collection property="flowList" javaType="java.util.List"
                     ofType="com.workorder.service.support.model.po.WorkOrderHandlerFlow">
@@ -255,11 +256,10 @@
 
     <select id="queryPageList" resultMap="BaseWorkOrderPageListMap">
         select
-        wo.id as work_order_id1, wo.title, wo.submit_user_id,wo.submit_user, wo.template_id, wo.created_datetime as
+        wo.id as work_order_id1, wo.title, wo.submit_user_id,wo.status as status1,wo.submit_user, wo.template_id, wo.created_datetime as
         submit_datetime, wo.affix_list,wo.content,
-        fl.id as flow_id, fl.work_order_id, fl.template_id,t.name,t.project_code, fl.handler_user_id,fl.handler_user, fl.status,
-        fl.action_type, fl.created_datetime as handler_datetime,
-        fl.last_modified_datetime, fl.memo, fl.handler_batch_id
+        fl.id as flow_id, fl.work_order_id, fl.template_id,t.name,t.project_code, fl.handler_user_id,fl.handler_user,
+        fl.status,fl.action_type, fl.created_datetime as handler_datetime,fl.last_modified_datetime, fl.memo, fl.handler_batch_id
         from work_order wo
         inner join work_order_handler_flow fl
         on wo.id = fl.work_order_id
@@ -289,4 +289,18 @@
         limit #{index},#{pageSize}
     </select>
 
+    <update id="cancelWorkOrder" parameterType="com.workorder.service.support.model.po.WorkOrder">
+        update work_order
+        set reason= #{reason,jdbcType=VARCHAR}
+          , reason_datetime = now()
+          , reason_user_id =#{reasonUserId,jdbcType=INTEGER}
+          , is_cancel = 1
+          , status = #{status,jdbcType=INTEGER}
+        WHERE id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <update id="updateWorkOrderStatus" parameterType="com.workorder.service.support.model.po.WorkOrder">
+        update work_order set  status = #{status,jdbcType=INTEGER},last_modified_datetime=now()
+        WHERE id = #{id,jdbcType=INTEGER}
+    </update>
 </mapper>

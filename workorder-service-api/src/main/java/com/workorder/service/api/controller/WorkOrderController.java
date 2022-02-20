@@ -7,9 +7,12 @@ import com.hummer.user.auth.plugin.annotation.AuthChannelEnum;
 import com.hummer.user.auth.plugin.annotation.UserAuthority;
 import com.workorder.service.facade.WorkOrderFacade;
 import com.workorder.service.facade.dto.request.QueryCurrentUserWorkOrderReqDto;
+import com.workorder.service.facade.dto.request.WorkOrderCancelReqDto;
 import com.workorder.service.facade.dto.request.WorkOrderCreatedReqDto;
+import com.workorder.service.facade.dto.request.WorkOrderEditReqDto;
 import com.workorder.service.facade.dto.response.WorkOrderRespDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,20 +30,34 @@ public class WorkOrderController {
 
     @PostMapping("/work-order/new")
     @UserAuthority(channel = AuthChannelEnum.LOCAL)
-    public ResourceResponse<Integer> createWorkOrder(@RequestBody @Valid WorkOrderCreatedReqDto req) {
+    public ResourceResponse<Integer> createWorkOrder(@RequestBody @Valid WorkOrderCreatedReqDto req, Errors errors) {
         return ResourceResponse.ok(workOrderFacade.createWorkOrder(req));
     }
 
     @GetMapping("/work-order/details/{workOrderId}")
     @UserAuthority(channel = AuthChannelEnum.LOCAL)
     public ResourceResponse<WorkOrderRespDto> queryWorkOrderDetails(@PathVariable("workOrderId") Integer workOrderId) {
-        return ResourceResponse.ok(workOrderFacade.querySubmitWorkOrderById(workOrderId));
+        return ResourceResponse.ok(workOrderFacade.queryWorkOrderDetailsById(workOrderId));
     }
 
     @PostMapping("/work-order/page-list")
     @UserAuthority(channel = AuthChannelEnum.LOCAL)
     public ResourceResponse<ResourcePageRespDto<WorkOrderRespDto>> queryWorkOrderPageList(
-            @RequestBody @Valid ResourcePageReqDto<QueryCurrentUserWorkOrderReqDto> req) {
+            @RequestBody @Valid ResourcePageReqDto<QueryCurrentUserWorkOrderReqDto> req, Errors errors) {
         return ResourceResponse.ok(workOrderFacade.queryCurrentUserWorkOrder(req));
+    }
+
+    @PostMapping("/work-order/edit")
+    @UserAuthority(channel = AuthChannelEnum.LOCAL)
+    public ResourceResponse editWorkOrder(@RequestBody @Valid WorkOrderEditReqDto req, Errors errors) {
+        workOrderFacade.editWorkOrder(req);
+        return ResourceResponse.ok();
+    }
+
+    @PostMapping("/work-order/cancel")
+    @UserAuthority(channel = AuthChannelEnum.LOCAL)
+    public ResourceResponse cancel(@RequestBody @Valid WorkOrderCancelReqDto req, Errors errors) {
+        workOrderFacade.cancel(req);
+        return ResourceResponse.ok();
     }
 }

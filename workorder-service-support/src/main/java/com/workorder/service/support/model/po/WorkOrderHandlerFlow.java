@@ -9,26 +9,16 @@ import java.util.Date;
  */
 public class WorkOrderHandlerFlow implements Serializable {
     private Integer id;
-
     private Integer workOrderId;
-
     private Integer templateId;
-
     private Integer handlerUserId;
     private String handlerUser;
-
     private Integer status;
-
     private Integer actionType;
-
     private Date createdDatetime;
-
     private Date lastModifiedDatetime;
-
     private Boolean isDelete;
-
     private String memo;
-
     private String handlerBatchId;
 
     public String getHandlerUser() {

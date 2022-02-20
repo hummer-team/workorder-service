@@ -61,4 +61,8 @@ public interface WorkOrderMapper {
 
     List<WorkOrder> queryPageList(@Param("queryPo") QueryCurrentUserWorkOrderPo queryPo
             , @Param("index") int index, @Param("pageSize") int pageSize);
+
+    int cancelWorkOrder(WorkOrder record);
+
+    int updateWorkOrderStatus(int id,int status);
 }

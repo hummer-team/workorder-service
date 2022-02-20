@@ -14,6 +14,7 @@ import com.workorder.service.dao.WorkOrderHandlerFlowMapper;
 import com.workorder.service.dao.WorkOrderMapper;
 import com.workorder.service.facade.WorkOrderFacade;
 import com.workorder.service.facade.dto.request.QueryCurrentUserWorkOrderReqDto;
+import com.workorder.service.facade.dto.request.WorkOrderCancelReqDto;
 import com.workorder.service.facade.dto.request.WorkOrderCreatedReqDto;
 import com.workorder.service.facade.dto.request.WorkOrderEditReqDto;
 import com.workorder.service.facade.dto.response.WorkOrderHandlerFlowRespDto;
@@ -21,8 +22,6 @@ import com.workorder.service.facade.dto.response.WorkOrderRespDto;
 import com.workorder.service.service.domain.OpEnum;
 import com.workorder.service.service.domain.RoleEnum;
 import com.workorder.service.service.domain.WorkOrderStatusEnum;
-import com.workorder.service.service.domain.core.UserEntity;
-import com.workorder.service.service.domain.core.UserRoleEntity;
 import com.workorder.service.service.domain.service.WorkerOrderService;
 import com.workorder.service.support.model.po.QueryCurrentUserWorkOrderPo;
 import com.workorder.service.support.model.po.Template;
@@ -30,6 +29,7 @@ import com.workorder.service.support.model.po.Users;
 import com.workorder.service.support.model.po.WorkOrder;
 import com.workorder.service.support.model.po.WorkOrderHandlerFlow;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,9 +39,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * @author guo.li
+ */
 @Service
 @Slf4j
-public class WorkOrderFacadeImpl implements WorkOrderFacade {
+public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrderFacade {
     @Autowired
     private UsersMapper usersMapper;
     @Autowired
@@ -56,9 +59,8 @@ public class WorkOrderFacadeImpl implements WorkOrderFacade {
     @Override
     public int createWorkOrder(WorkOrderCreatedReqDto req) {
         UserContext userContext = UserHolder.getNotNull();
-
         RoleEnum submitRoleEnum = getCurrentUserRole(userContext);
-        checkIsAllowOp(req.getTitle(), userContext, submitRoleEnum, OpEnum.SUBMIT_WORK_ORDER);
+        checkIsAllowOp(userContext, submitRoleEnum, OpEnum.SUBMIT_WORK_ORDER);
 
         Template template = templateMapper.selectByPrimaryKey(req.getTemplateId());
         if (template == null || StringUtils.isEmpty(template.getApproveUserIds()) || template.getExecuteUserId() == null) {
@@ -72,7 +74,7 @@ public class WorkOrderFacadeImpl implements WorkOrderFacade {
             throw new AppException(40005, "approval user not config,submit order failed");
         }
         RoleEnum approvalRoleEnum = getUserRoleByRole(approvalUsers.getRoleCode());
-        checkIsAllowOp(req.getTitle(), userContext, approvalRoleEnum, OpEnum.APPROVE_WORK_ORDER);
+        checkIsAllowOp(userContext, approvalRoleEnum, OpEnum.APPROVE_WORK_ORDER);
 
         WorkOrder workOrder = workerOrderService.submitWorkOrder(req, userContext, WorkOrderStatusEnum.WAIT_APPROVE, approvalUsers);
         log.info("user {} work order {} created success ", userContext.getUserName(), req.getTitle());
@@ -82,32 +84,36 @@ public class WorkOrderFacadeImpl implements WorkOrderFacade {
     @Override
     public void editWorkOrder(WorkOrderEditReqDto req) {
         UserContext userContext = UserHolder.getNotNull();
-        RoleEnum roleEnum = getCurrentUserRole(userContext);
-        checkIsAllowOp("", userContext, roleEnum, OpEnum.SUBMIT_WORK_ORDER);
+        checkIsAllowOp(userContext, getCurrentUserRole(userContext), OpEnum.SUBMIT_WORK_ORDER);
 
         WorkOrder workOrder = new WorkOrder();
+        workOrder.setId(req.getId());
         workOrder.setContent(req.getContent());
         workOrder.setTitle(req.getTitle());
         workOrder.setTemplateId(req.getTemplateId());
         workOrder.setSubmitUserId(Integer.parseInt(userContext.getUserId()));
-        workOrderMapper.updateWorkOrderContentById(workOrder);
+        int result = workOrderMapper.updateWorkOrderContentById(workOrder);
+        ParameterAssertUtil.assertConditionTrue(result > 0, () -> new AppException(40000
+                , "edit work order failed"));
     }
 
 
     @Override
-    public WorkOrderRespDto querySubmitWorkOrderById(int id) {
+    public WorkOrderRespDto queryWorkOrderDetailsById(int id) {
         UserContext userContext = UserHolder.getNotNull();
         RoleEnum roleEnum = getCurrentUserRole(userContext);
-        checkIsAllowOp("", userContext, roleEnum, OpEnum.VIEW_WORK_ORDER);
+        checkIsAllowOp(userContext, roleEnum, OpEnum.VIEW_WORK_ORDER);
 
-        Integer submitUserId = roleEnum != RoleEnum.ADMINISTRATOR ? null : Integer.parseInt(userContext.getUserId());
+        Integer submitUserId = roleEnum == RoleEnum.ADMINISTRATOR ? null : Integer.parseInt(userContext.getUserId());
         WorkOrder workOrder = workOrderMapper.selectByPrimaryKey(id, submitUserId);
 
         ParameterAssertUtil.assertConditionTrue(workOrder != null
                 , () -> new AppException(40004, "work order not find"));
+
         List<WorkOrderHandlerFlow> flowList = handlerFlowMapper.selectByWorkOrderId(id);
         WorkOrderRespDto resp = ObjectCopyUtils.copy(workOrder, WorkOrderRespDto.class);
         assert resp != null;
+
         Template template = templateMapper.selectByPrimaryKey(workOrder.getTemplateId());
         resp.setTemplateName(template.getName());
         resp.setProjectCode(template.getProjectCode());
@@ -126,7 +132,7 @@ public class WorkOrderFacadeImpl implements WorkOrderFacade {
 
         UserContext userContext = UserHolder.getNotNull();
         RoleEnum roleEnum = getCurrentUserRole(userContext);
-        checkIsAllowOp("view work order", userContext, roleEnum, OpEnum.VIEW_WORK_ORDER);
+        checkIsAllowOp(userContext, roleEnum, OpEnum.VIEW_WORK_ORDER);
 
         QueryCurrentUserWorkOrderPo queryPo = ObjectCopyUtils.copy(req.getQueryObject(), QueryCurrentUserWorkOrderPo.class);
         queryPo.setUserId(Integer.parseInt(userContext.getUserId()));
@@ -147,28 +153,42 @@ public class WorkOrderFacadeImpl implements WorkOrderFacade {
                     .collect(Collectors.toUnmodifiableList());
             dto.setHandlerFlows(ObjectCopyUtils.copyByList(flowList, WorkOrderHandlerFlowRespDto.class));
         }
+        respDtos.forEach(r -> r.setStatusDes(WorkOrderStatusEnum.getByCode(r.getStatus()).getDesc()));
         respDtos.forEach(w -> Optional.ofNullable(w.getHandlerFlows()).orElse(Collections.emptyList())
                 .forEach(f -> f.setStatusDes(WorkOrderStatusEnum.getByCode(f.getStatus()).getDesc())));
         return ResourcePageRespDto.builderPage(req.getPageNumber(), req.getPageSize(), count, respDtos);
     }
 
-    private RoleEnum getCurrentUserRole(UserContext userContext) {
-        UserEntity userEntity = new UserEntity();
-        return userEntity.getRoleByContext(userContext);
-    }
+    @Override
+    public void cancel(WorkOrderCancelReqDto req) {
+        UserContext userContext = UserHolder.getNotNull();
+        RoleEnum roleEnum = getCurrentUserRole(userContext);
+        checkIsAllowOp(userContext, roleEnum, OpEnum.CANCEL_WORK_ORDER);
+        Integer submitUserId = roleEnum == RoleEnum.ADMINISTRATOR ? null : Integer.parseInt(userContext.getUserId());
+        WorkOrder workOrderPo = workOrderMapper.selectByPrimaryKey(req.getWorkOrderId(), submitUserId);
+        ParameterAssertUtil.assertConditionTrue(workOrderPo != null
+                , () -> new AppException(40004, String.format("work order %s not find", req.getWorkOrderId())));
 
-    private RoleEnum getUserRoleByRole(String roleCode) {
-        UserEntity userEntity = new UserEntity();
-        return userEntity.getRoleByCode(roleCode);
-    }
-
-    private void checkIsAllowOp(String description, UserContext userContext, RoleEnum roleEnum, OpEnum opEnum) {
-        //todo AOP
-        UserRoleEntity roleEntity = new UserRoleEntity(roleEnum);
-        if (!roleEntity.checkAllowOp(opEnum)) {
-            log.warn("user {} {} {}, no permission", userContext.getUserName(), opEnum, description);
-            throw new AppException(opEnum.getCode(), String.format("user %s not allow operation work order"
-                    , userContext.getUserName()));
+        assert workOrderPo != null;
+        if (Boolean.TRUE.equals(workOrderPo.getIsCancel())) {
+            throw new AppException(40005, "this work order already cancel.");
         }
+
+        List<WorkOrderHandlerFlow> flowList = handlerFlowMapper.selectByWorkOrderId(req.getWorkOrderId());
+        if (CollectionUtils.isNotEmpty(flowList)
+                || flowList.stream().anyMatch(f ->
+                WorkOrderStatusEnum.getByCode(f.getStatus()) == WorkOrderStatusEnum.WAIT_APPROVE
+                        || WorkOrderStatusEnum.getByCode(f.getStatus()) == WorkOrderStatusEnum.RETURNED)
+        ) {
+            WorkOrder workOrder = new WorkOrder();
+            workOrder.setId(req.getWorkOrderId());
+            workOrder.setReason(req.getReason());
+            workOrder.setStatus(WorkOrderStatusEnum.CANCELED.getCode());
+
+            workOrderMapper.cancelWorkOrder(workOrder);
+            log.info("user {} cancel work order {} reason {}", userContext.getUserName(), req.getWorkOrderId(), req.getReason());
+        }
+
+        throw new AppException(40006, "Only in the status of pending approval or rejected can it be cancelled");
     }
 }

@@ -20,6 +20,8 @@ public class WorkOrderRespDto {
     private Date createdDatetime;
     private String affixList;
     private String content;
+    private Integer status;
+    private String statusDes;
 
     private List<WorkOrderHandlerFlowRespDto> handlerFlows;
 }

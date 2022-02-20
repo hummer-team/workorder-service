@@ -11,25 +11,54 @@ import java.util.List;
  */
 public class WorkOrder implements Serializable {
     private Integer id;
-
     private String title;
-
     private Integer submitUserId;
     private String submitUser;
-
     private Integer status;
-
     private Integer templateId;
     private String templateName;
     private String projectCode;
-
     private Date createdDatetime;
-
     private Boolean isDelete;
-
     private String affixList;
-
     private String content;
+    private String reason;
+    private String reasonUserId;
+    private Date reasonDatetime;
+    private Boolean isCancel;
+
+
+    public String getReason() {
+        return reason;
+    }
+
+    public Boolean getIsCancel(){
+        return isCancel;
+    }
+
+    public void setIsCancel(Boolean reason) {
+        isCancel = reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    public String getReasonUserId() {
+        return reasonUserId;
+    }
+
+    public void setReasonUserId(String reasonUserId) {
+        this.reasonUserId = reasonUserId;
+    }
+
+    public Date getReasonDatetime() {
+        return reasonDatetime;
+    }
+
+    public void setReasonDatetime(Date reasonDatetime) {
+        this.reasonDatetime = reasonDatetime;
+    }
 
     public String getTemplateName() {
         return templateName;

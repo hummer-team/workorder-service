@@ -19,6 +19,8 @@ public class WorkOrderEditReqDto {
     private Integer templateId;
     @NotEmpty(message = "work order content can't null")
     private String content;
+    @NotNull(message = "work order id can't null")
+    private Integer id;
     /**
      * affix is Optional
      */
