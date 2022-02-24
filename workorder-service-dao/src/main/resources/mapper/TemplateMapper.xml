@@ -32,6 +32,17 @@
     from template
     where id = #{id,jdbcType=INTEGER}
   </select>
+
+  <select id="selectByPrimaryKeys" parameterType="java.util.List" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from template
+    where id in
+    <foreach collection="ids" item="item" open="(" close=")" separator=",">
+      #{item}
+    </foreach>
+  </select>
+
   <insert id="insert" parameterType="com.workorder.service.support.model.po.Template">
     <!--
       WARNING - @mbg.generated
