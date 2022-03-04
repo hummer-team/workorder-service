@@ -16,3 +16,4 @@ a.txt
 *log*
 db
 .flattened-pom.xml
+.DS_Store
