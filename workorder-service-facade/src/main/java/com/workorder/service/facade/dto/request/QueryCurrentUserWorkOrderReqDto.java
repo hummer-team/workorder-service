@@ -14,4 +14,5 @@ public class QueryCurrentUserWorkOrderReqDto {
     private Date beginDate;
     @NotNull(message = "end date can't null")
     private Date endDate;
+    private String environment;
 }

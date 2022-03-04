@@ -22,6 +22,9 @@ public class WorkOrderRespDto {
     private String content;
     private Integer status;
     private String statusDes;
+    private Integer lastNeedHandlerFlowId;
+    private Date expectDatetime;
+    private String environment;
 
     private List<WorkOrderHandlerFlowRespDto> handlerFlows;
 }

@@ -1,7 +1,9 @@
 package com.workorder.service.service.facade;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
 import com.hummer.common.exceptions.AppException;
 import com.hummer.common.security.Aes;
 import com.hummer.common.security.Md5;
@@ -13,6 +15,7 @@ import com.workorder.service.facade.UserFacade;
 import com.workorder.service.facade.dto.request.UserCreatedReqDto;
 import com.workorder.service.facade.dto.request.UserLoginReqDto;
 import com.workorder.service.facade.dto.response.TemplateRespDto;
+import com.workorder.service.facade.dto.response.UserInfoRespDto;
 import com.workorder.service.facade.dto.response.UserLoginRespDto;
 import com.workorder.service.service.domain.RoleEnum;
 import com.workorder.service.service.domain.core.UserEntity;
@@ -31,7 +34,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class UserFacadeImpl implements UserFacade {
+public class UserFacadeImpl extends BaseWorkOrderFacade implements UserFacade {
     @Autowired
     private UsersMapper usersMapper;
     @Autowired
@@ -39,15 +42,23 @@ public class UserFacadeImpl implements UserFacade {
 
     @Override
     public void createUser(UserCreatedReqDto req) {
+        //checkIsAllowOp(OpEnum.ADD_USER);
+
         RoleEnum roleEnum = RoleEnum.getRoleByName(req.getRoleCode());
         req.setPassword(Md5.encryptMd5(Aes.encryptToStringByDefaultKeyIv(req.getPassword())));
         Users users = ObjectCopyUtils.copy(req, Users.class);
         users.setRoleCode(roleEnum.name());
+        if (roleEnum == RoleEnum.DEVELOP) {
+            if (CollectionUtils.isEmpty(req.getTemplateIds())) {
+                throw new AppException(40000, "user must spec work template");
+            }
+            users.setTemplateIds(Joiner.on(",").join(req.getTemplateIds()));
+        }
         try {
             usersMapper.insert(users);
             log.info("user {} {} created success", req.getUserName(), req.getRoleCode());
         } catch (DuplicateKeyException e) {
-            throw new AppException(40000, String.format("user %s already exists", req.getUserName()));
+            throw new AppException(40001, String.format("user %s already exists", req.getUserName()));
         }
     }
 
@@ -89,5 +100,12 @@ public class UserFacadeImpl implements UserFacade {
 
 
         return respDto;
+    }
+
+    @Override
+    public List<UserInfoRespDto> queryUserByRoles() {
+        List<Users> users = usersMapper.selectUsersByRole(Lists.newArrayList(RoleEnum.APPROVE.name()
+                , RoleEnum.DEVELOP.name(),RoleEnum.EXECUTE.name()));
+        return ObjectCopyUtils.copyByList(users, UserInfoRespDto.class);
     }
 }

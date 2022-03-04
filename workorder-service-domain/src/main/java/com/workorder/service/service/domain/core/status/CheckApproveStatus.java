@@ -22,7 +22,7 @@ public class CheckApproveStatus implements CheckStatus {
             , List<Integer> historyStatus
             , Template template) {
 
-        ParameterAssertUtil.assertConditionTrue(!Boolean.TRUE.equals(workOrderPo.getIsCancel())
+        ParameterAssertUtil.assertConditionFalse(workOrderPo.getStatus() == WorkOrderStatusEnum.CANCELED.getCode()
                 , () -> new AppException(40000, "已取消工单，不能审批"));
 
         ParameterAssertUtil.assertConditionFalse(currentStatus == WorkOrderStatusEnum.RETURNED
@@ -41,8 +41,8 @@ public class CheckApproveStatus implements CheckStatus {
         WorkOrderHandlerFlow flow = new WorkOrderHandlerFlow();
         flow.setHandlerBatchId(DateUtil.formatNowDate(DateUtil.DateTimeFormat.F7.getValue()));
         if (nextUserId.isPresent()) {
-            flow.setStatus(WorkOrderStatusEnum.WAIT_APPROVE.getCode());
-            flow.setActionType(WorkOrderStatusEnum.WAIT_APPROVE.getCode());
+            flow.setStatus(WorkOrderStatusEnum.WAIT_EXECUTE.getCode());
+            flow.setActionType(WorkOrderStatusEnum.WAIT_EXECUTE.getCode());
             flow.setTemplateId(workOrderPo.getTemplateId());
             flow.setWorkOrderId(workOrderPo.getId());
             flow.setHandlerUserId(Integer.parseInt(nextUserId.get()));

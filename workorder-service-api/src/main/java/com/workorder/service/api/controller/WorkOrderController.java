@@ -29,33 +29,33 @@ public class WorkOrderController {
     private WorkOrderFacade workOrderFacade;
 
     @PostMapping("/work-order/new")
-    @UserAuthority(channel = AuthChannelEnum.LOCAL)
+    @UserAuthority(channel = AuthChannelEnum.LOCAL, authorityCodes = {"SUBMIT_WORK_ORDER"})
     public ResourceResponse<Integer> createWorkOrder(@RequestBody @Valid WorkOrderCreatedReqDto req, Errors errors) {
         return ResourceResponse.ok(workOrderFacade.createWorkOrder(req));
     }
 
     @GetMapping("/work-order/details/{workOrderId}")
-    @UserAuthority(channel = AuthChannelEnum.LOCAL)
+    @UserAuthority(channel = AuthChannelEnum.LOCAL, authorityCodes = {"VIEW_WORK_ORDER"})
     public ResourceResponse<WorkOrderRespDto> queryWorkOrderDetails(@PathVariable("workOrderId") Integer workOrderId) {
         return ResourceResponse.ok(workOrderFacade.queryWorkOrderDetailsById(workOrderId));
     }
 
     @PostMapping("/work-order/page-list")
-    @UserAuthority(channel = AuthChannelEnum.LOCAL)
+    @UserAuthority(channel = AuthChannelEnum.LOCAL, authorityCodes = {"VIEW_WORK_ORDER"})
     public ResourceResponse<ResourcePageRespDto<WorkOrderRespDto>> queryWorkOrderPageList(
             @RequestBody @Valid ResourcePageReqDto<QueryCurrentUserWorkOrderReqDto> req, Errors errors) {
         return ResourceResponse.ok(workOrderFacade.queryCurrentUserWorkOrder(req));
     }
 
     @PostMapping("/work-order/edit")
-    @UserAuthority(channel = AuthChannelEnum.LOCAL)
+    @UserAuthority(channel = AuthChannelEnum.LOCAL, authorityCodes = {"SUBMIT_WORK_ORDER"})
     public ResourceResponse editWorkOrder(@RequestBody @Valid WorkOrderEditReqDto req, Errors errors) {
         workOrderFacade.editWorkOrder(req);
         return ResourceResponse.ok();
     }
 
     @PostMapping("/work-order/cancel")
-    @UserAuthority(channel = AuthChannelEnum.LOCAL)
+    @UserAuthority(channel = AuthChannelEnum.LOCAL, authorityCodes = {"CANCEL_WORK_ORDER"})
     public ResourceResponse cancel(@RequestBody @Valid WorkOrderCancelReqDto req, Errors errors) {
         workOrderFacade.cancel(req);
         return ResourceResponse.ok();

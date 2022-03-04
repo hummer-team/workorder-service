@@ -13,7 +13,7 @@ public class CheckReturnStatus implements CheckStatus {
     @Override
     public NextHandlerFlow checkAndReturnNext(WorkOrderStatusEnum currentStatus, WorkOrder workOrderPo
             , List<Integer> handlerUserIds, List<Integer> historyStatus, Template template) {
-        ParameterAssertUtil.assertConditionTrue(!Boolean.TRUE.equals(workOrderPo.getIsCancel())
+        ParameterAssertUtil.assertConditionFalse(workOrderPo.getStatus() == WorkOrderStatusEnum.CANCELED.getCode()
                 , () -> new AppException(40050, "已取消工单，不能驳回"));
 
         ParameterAssertUtil.assertConditionFalse(currentStatus == WorkOrderStatusEnum.APPROVE_OK

@@ -15,7 +15,7 @@ public class WorkOrderHandlerFlowReqDto {
     @Min(value = 1, message = "work order value must greater than 1")
     private Integer workOrderId;
     @NotNull(message = "work order can't null")
-    @ApiModelProperty(notes = "10010:审批通过;4000:驳回;3000:执行完成")
+    @ApiModelProperty(notes = "1020:审批通过;1010:驳回;3000:执行完成")
     private Integer status;
     private String memo;
     @NotNull(message = "handler flowId can't null")

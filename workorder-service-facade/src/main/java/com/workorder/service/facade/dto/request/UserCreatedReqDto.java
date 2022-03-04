@@ -4,6 +4,7 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotEmpty;
+import java.util.List;
 
 /**
  * @author guo.li
@@ -17,4 +18,6 @@ public class UserCreatedReqDto {
     private String password;
     @NotEmpty(message = "role code can't  null")
     private String roleCode;
+
+    private List<Integer> templateIds;
 }

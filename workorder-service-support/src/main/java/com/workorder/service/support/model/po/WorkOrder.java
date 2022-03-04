@@ -23,41 +23,50 @@ public class WorkOrder implements Serializable {
     private String affixList;
     private String content;
     private String reason;
-    private String reasonUserId;
-    private Date reasonDatetime;
-    private Boolean isCancel;
+    private Integer cancelUserId;
+    private Date cancelDatetime;
+    private Date expectDatetime;
+    private String environment;
 
+    public String getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(String environment) {
+        this.environment = environment;
+    }
+
+    public Date getExpectDatetime() {
+        return expectDatetime;
+    }
+
+    public void setExpectDatetime(Date expectDatetime) {
+        this.expectDatetime = expectDatetime;
+    }
 
     public String getReason() {
         return reason;
     }
 
-    public Boolean getIsCancel(){
-        return isCancel;
-    }
-
-    public void setIsCancel(Boolean reason) {
-        isCancel = reason;
-    }
 
     public void setReason(String reason) {
         this.reason = reason;
     }
 
-    public String getReasonUserId() {
-        return reasonUserId;
+    public Integer getCancelUserId() {
+        return cancelUserId;
     }
 
-    public void setReasonUserId(String reasonUserId) {
-        this.reasonUserId = reasonUserId;
+    public void setCancelUserId(Integer cancelUserId) {
+        this.cancelUserId = cancelUserId;
     }
 
-    public Date getReasonDatetime() {
-        return reasonDatetime;
+    public Date getCancelDatetime() {
+        return cancelDatetime;
     }
 
-    public void setReasonDatetime(Date reasonDatetime) {
-        this.reasonDatetime = reasonDatetime;
+    public void setCancelDatetime(Date cancelDatetime) {
+        this.cancelDatetime = cancelDatetime;
     }
 
     public String getTemplateName() {

@@ -11,6 +11,9 @@ public enum OpEnum {
     ADMIN_WORK_ORDER(10040),
     VIEW_WORK_ORDER(10050),
     CANCEL_WORK_ORDER(10060),
+    ADD_USER(10070),
+    ADD_TEMPLATE(10080),
+    RETURNED(10090),
     ALL(100000);
 
     private int code;
@@ -26,6 +29,16 @@ public enum OpEnum {
     public static OpEnum getByCode(int code) {
         for (OpEnum opEnum : values()) {
             if (opEnum.code == code) {
+                return opEnum;
+            }
+        }
+
+        throw new IllegalArgumentException("invalid op enum code");
+    }
+
+    public static OpEnum getByName(String name) {
+        for (OpEnum opEnum : values()) {
+            if (opEnum.name().equals(name)) {
                 return opEnum;
             }
         }

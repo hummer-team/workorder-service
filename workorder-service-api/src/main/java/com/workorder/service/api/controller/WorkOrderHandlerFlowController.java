@@ -21,7 +21,7 @@ public class WorkOrderHandlerFlowController {
     private WorkOrderHandlerFlowFacade flowFacade;
 
     @PostMapping("/work-order/flow-handler")
-    @UserAuthority(channel = AuthChannelEnum.LOCAL)
+    @UserAuthority(channel = AuthChannelEnum.LOCAL, authorityCodes = {"APPROVE_WORK_ORDER", "RETURNED", "EXECUTE_WORK_ORDER"})
     public ResourceResponse handler(@RequestBody @Valid WorkOrderHandlerFlowReqDto req, Errors errors) {
         flowFacade.handler(req);
         return ResourceResponse.ok();

@@ -36,6 +36,10 @@
         <result column="name" jdbcType="VARCHAR" property="templateName"/>
         <result column="project_code" jdbcType="VARCHAR" property="projectCode"/>
         <result column="status1" jdbcType="INTEGER" property="status"/>
+        <result column="expect_datetime" jdbcType="TIMESTAMP" property="expectDatetime"/>
+        <result column="environment" jdbcType="VARCHAR" property="environment"/>
+        <result column="cancel_user_id" jdbcType="INTEGER" property="cancelUserId"/>
+        <result column="cancel_datetime" jdbcType="INTEGER" property="cancelDatetime"/>
 
         <collection property="flowList" javaType="java.util.List"
                     ofType="com.workorder.service.support.model.po.WorkOrderHandlerFlow">
@@ -94,11 +98,14 @@
         <!--    </selectKey>-->
         insert into work_order (title, submit_user_id,submit_user, status,
         template_id, created_datetime, is_delete,
-        affix_list, content)
+        affix_list, content,expect_datetime,environment)
         values (#{title,jdbcType=VARCHAR}, #{submitUserId,jdbcType=INTEGER},#{submitUser,jdbcType=VARCHAR},
         #{status,jdbcType=INTEGER},
         #{templateId,jdbcType=INTEGER}, now(), 0,
-        #{affixList,jdbcType=VARCHAR}, #{content,jdbcType=LONGVARCHAR})
+        #{affixList,jdbcType=VARCHAR},
+        #{content,jdbcType=LONGVARCHAR},
+        #{expectDatetime,jdbcType=TIMESTAMP},
+        #{environment,jdbcType=VARCHAR})
     </insert>
     <insert id="insertSelective" parameterType="com.workorder.service.support.model.po.WorkOrder">
         <!--
@@ -256,14 +263,16 @@
 
     <select id="queryPageList" resultMap="BaseWorkOrderPageListMap">
         select
-        wo.id as work_order_id1, wo.title, wo.submit_user_id,wo.status as status1,wo.submit_user, wo.template_id, wo.created_datetime as
+        wo.id as work_order_id1, wo.title, wo.submit_user_id,wo.status as status1,wo.submit_user, wo.template_id,
+        wo.created_datetime as
         submit_datetime, wo.affix_list,wo.content,
+        wo.expect_datetime,wo.environment,
         fl.id as flow_id, fl.work_order_id, fl.template_id,t.name,t.project_code, fl.handler_user_id,fl.handler_user,
-        fl.status,fl.action_type, fl.created_datetime as handler_datetime,fl.last_modified_datetime, fl.memo, fl.handler_batch_id
+        fl.status,fl.action_type, fl.created_datetime as handler_datetime,fl.last_modified_datetime, fl.memo,
+        fl.handler_batch_id
         from work_order wo
         inner join work_order_handler_flow fl
         on wo.id = fl.work_order_id
-
         inner join template t
         on fl.template_id=t.id
         <where>
@@ -292,15 +301,16 @@
     <update id="cancelWorkOrder" parameterType="com.workorder.service.support.model.po.WorkOrder">
         update work_order
         set reason= #{reason,jdbcType=VARCHAR}
-          , reason_datetime = now()
-          , reason_user_id =#{reasonUserId,jdbcType=INTEGER}
-          , is_cancel = 1
+          , cancel_datetime = now()
           , status = #{status,jdbcType=INTEGER}
+          , cancel_user_id=#{cancelUserId,jdbcType=INTEGER}
         WHERE id = #{id,jdbcType=INTEGER}
     </update>
 
     <update id="updateWorkOrderStatus" parameterType="com.workorder.service.support.model.po.WorkOrder">
-        update work_order set  status = #{status,jdbcType=INTEGER},last_modified_datetime=now()
+        update work_order
+        set status                = #{status,jdbcType=INTEGER},
+            last_modified_datetime=now()
         WHERE id = #{id,jdbcType=INTEGER}
     </update>
 </mapper>

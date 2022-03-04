@@ -32,6 +32,8 @@ public class WorkerOrderService {
         workOrder.setSubmitUserId(Integer.parseInt(userContext.getUserId()));
         workOrder.setSubmitUser(userContext.getUserName());
         workOrder.setStatus(status.getCode());
+        workOrder.setExpectDatetime(req.getExpectDatetime());
+        workOrder.setEnvironment(req.getEnvironment());
         workOrderMapper.insert(workOrder);
 
         WorkOrderHandlerFlow flow = new WorkOrderHandlerFlow();

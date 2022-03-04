@@ -23,6 +23,24 @@ public class Template implements Serializable {
     private Boolean isDelete;
 
     private String projectCode;
+    private Integer createdUserId;
+    private String describe;
+
+    public String getDescribe() {
+        return describe;
+    }
+
+    public void setDescribe(String describe) {
+        this.describe = describe;
+    }
+
+    public Integer getCreatedUserId() {
+        return createdUserId;
+    }
+
+    public void setCreatedUserId(Integer createdUserId) {
+        this.createdUserId = createdUserId;
+    }
 
     public String getProjectCode() {
         return projectCode;

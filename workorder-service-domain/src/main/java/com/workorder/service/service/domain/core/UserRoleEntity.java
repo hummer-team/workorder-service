@@ -14,9 +14,9 @@ public class UserRoleEntity {
 
     {
         roleOpMap.put(RoleEnum.DEVELOP, Lists.newArrayList(OpEnum.SUBMIT_WORK_ORDER, OpEnum.VIEW_WORK_ORDER, OpEnum.CANCEL_WORK_ORDER));
-        roleOpMap.put(RoleEnum.EXECUTE, Lists.newArrayList(OpEnum.EXECUTE_WORK_ORDER, OpEnum.VIEW_WORK_ORDER));
-        roleOpMap.put(RoleEnum.APPROVE, Lists.newArrayList(OpEnum.APPROVE_WORK_ORDER, OpEnum.VIEW_WORK_ORDER));
-        roleOpMap.put(RoleEnum.ADMINISTRATOR, Lists.newArrayList(OpEnum.VIEW_WORK_ORDER));
+        roleOpMap.put(RoleEnum.EXECUTE, Lists.newArrayList(OpEnum.EXECUTE_WORK_ORDER, OpEnum.VIEW_WORK_ORDER, OpEnum.RETURNED));
+        roleOpMap.put(RoleEnum.APPROVE, Lists.newArrayList(OpEnum.APPROVE_WORK_ORDER, OpEnum.VIEW_WORK_ORDER, OpEnum.RETURNED));
+        roleOpMap.put(RoleEnum.ADMINISTRATOR, Lists.newArrayList(OpEnum.VIEW_WORK_ORDER, OpEnum.ADD_USER, OpEnum.ADD_TEMPLATE));
     }
 
     public UserRoleEntity(RoleEnum roleEnum) {

@@ -2,6 +2,7 @@ package com.workorder.service.service.facade;
 
 import com.google.common.base.Splitter;
 import com.hummer.common.exceptions.AppException;
+import com.hummer.common.utils.DateUtil;
 import com.hummer.common.utils.ObjectCopyUtils;
 import com.hummer.rest.model.request.ResourcePageReqDto;
 import com.hummer.rest.model.response.ResourcePageRespDto;
@@ -35,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -58,10 +60,9 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
 
     @Override
     public int createWorkOrder(WorkOrderCreatedReqDto req) {
-        UserContext userContext = UserHolder.getNotNull();
-        RoleEnum submitRoleEnum = getCurrentUserRole(userContext);
-        checkIsAllowOp(userContext, submitRoleEnum, OpEnum.SUBMIT_WORK_ORDER);
-
+        if (req.getExpectDatetime().before(DateUtil.now())) {
+            throw new AppException(40005, "expect datetime must after now");
+        }
         Template template = templateMapper.selectByPrimaryKey(req.getTemplateId());
         if (template == null || StringUtils.isEmpty(template.getApproveUserIds()) || template.getExecuteUserId() == null) {
             throw new AppException(40004, String.format("template %s not find or template config error,please check"
@@ -71,10 +72,14 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
         int approvalUserId = Integer.parseInt(Splitter.on(",").splitToList(template.getApproveUserIds()).get(0));
         Users approvalUsers = usersMapper.selectByPrimaryKey(approvalUserId);
         if (approvalUsers == null) {
-            throw new AppException(40005, "approval user not config,submit order failed");
+            throw new AppException(40006, "approval user not config,submit order failed");
         }
         RoleEnum approvalRoleEnum = getUserRoleByRole(approvalUsers.getRoleCode());
-        checkIsAllowOp(userContext, approvalRoleEnum, OpEnum.APPROVE_WORK_ORDER);
+        if (approvalRoleEnum != RoleEnum.APPROVE) {
+            throw new AppException(40007, String.format("approval user %s No approval authority", approvalUsers.getUserName()));
+        }
+
+        UserContext userContext = UserHolder.getNotNull();
 
         WorkOrder workOrder = workerOrderService.submitWorkOrder(req, userContext, WorkOrderStatusEnum.WAIT_APPROVE, approvalUsers);
         log.info("user {} work order {} created success ", userContext.getUserName(), req.getTitle());
@@ -84,7 +89,7 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
     @Override
     public void editWorkOrder(WorkOrderEditReqDto req) {
         UserContext userContext = UserHolder.getNotNull();
-        checkIsAllowOp(userContext, getCurrentUserRole(userContext), OpEnum.SUBMIT_WORK_ORDER);
+        //checkIsAllowOp(userContext, getCurrentUserRole(userContext), OpEnum.SUBMIT_WORK_ORDER);
 
         WorkOrder workOrder = new WorkOrder();
         workOrder.setId(req.getId());
@@ -102,9 +107,9 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
     public WorkOrderRespDto queryWorkOrderDetailsById(int id) {
         UserContext userContext = UserHolder.getNotNull();
         RoleEnum roleEnum = getCurrentUserRole(userContext);
-        checkIsAllowOp(userContext, roleEnum, OpEnum.VIEW_WORK_ORDER);
+        //checkIsAllowOp(userContext, roleEnum, OpEnum.VIEW_WORK_ORDER);
 
-        Integer submitUserId = roleEnum == RoleEnum.ADMINISTRATOR ? null : Integer.parseInt(userContext.getUserId());
+        Integer submitUserId = roleEnum == RoleEnum.DEVELOP ? Integer.parseInt(userContext.getUserId()) : null;
         WorkOrder workOrder = workOrderMapper.selectByPrimaryKey(id, submitUserId);
 
         ParameterAssertUtil.assertConditionTrue(workOrder != null
@@ -132,7 +137,7 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
 
         UserContext userContext = UserHolder.getNotNull();
         RoleEnum roleEnum = getCurrentUserRole(userContext);
-        checkIsAllowOp(userContext, roleEnum, OpEnum.VIEW_WORK_ORDER);
+        //checkIsAllowOp(userContext, roleEnum, OpEnum.VIEW_WORK_ORDER);
 
         QueryCurrentUserWorkOrderPo queryPo = ObjectCopyUtils.copy(req.getQueryObject(), QueryCurrentUserWorkOrderPo.class);
         queryPo.setUserId(Integer.parseInt(userContext.getUserId()));
@@ -152,6 +157,13 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
                     .flatMap(p -> p.getFlowList().stream())
                     .collect(Collectors.toUnmodifiableList());
             dto.setHandlerFlows(ObjectCopyUtils.copyByList(flowList, WorkOrderHandlerFlowRespDto.class));
+
+            Optional<WorkOrderHandlerFlow> temp = flowList
+                    .stream()
+                    .sorted(Comparator.comparing(WorkOrderHandlerFlow::getCreatedDatetime).reversed())
+                    .limit(1)
+                    .findFirst();
+            temp.ifPresent(workOrderRespDto -> dto.setLastNeedHandlerFlowId(workOrderRespDto.getId()));
         }
         respDtos.forEach(r -> r.setStatusDes(WorkOrderStatusEnum.getByCode(r.getStatus()).getDesc()));
         respDtos.forEach(w -> Optional.ofNullable(w.getHandlerFlows()).orElse(Collections.emptyList())
@@ -163,14 +175,14 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
     public void cancel(WorkOrderCancelReqDto req) {
         UserContext userContext = UserHolder.getNotNull();
         RoleEnum roleEnum = getCurrentUserRole(userContext);
-        checkIsAllowOp(userContext, roleEnum, OpEnum.CANCEL_WORK_ORDER);
+
         Integer submitUserId = roleEnum == RoleEnum.ADMINISTRATOR ? null : Integer.parseInt(userContext.getUserId());
         WorkOrder workOrderPo = workOrderMapper.selectByPrimaryKey(req.getWorkOrderId(), submitUserId);
         ParameterAssertUtil.assertConditionTrue(workOrderPo != null
                 , () -> new AppException(40004, String.format("work order %s not find", req.getWorkOrderId())));
 
         assert workOrderPo != null;
-        if (Boolean.TRUE.equals(workOrderPo.getIsCancel())) {
+        if (workOrderPo.getStatus() == WorkOrderStatusEnum.CANCELED.getCode()) {
             throw new AppException(40005, "this work order already cancel.");
         }
 
@@ -184,7 +196,7 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
             workOrder.setId(req.getWorkOrderId());
             workOrder.setReason(req.getReason());
             workOrder.setStatus(WorkOrderStatusEnum.CANCELED.getCode());
-
+            workOrder.setCancelUserId(Integer.parseInt(userContext.getUserId()));
             workOrderMapper.cancelWorkOrder(workOrder);
             log.info("user {} cancel work order {} reason {}", userContext.getUserName(), req.getWorkOrderId(), req.getReason());
         }
