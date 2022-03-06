@@ -27,6 +27,24 @@ public class WorkOrder implements Serializable {
     private Date cancelDatetime;
     private Date expectDatetime;
     private String environment;
+    private Date lastHandlerDatetime;
+    private String lastHandlerUser;
+
+    public Date getLastHandlerDatetime() {
+        return lastHandlerDatetime;
+    }
+
+    public void setLastHandlerDatetime(Date lastHandlerDatetime) {
+        this.lastHandlerDatetime = lastHandlerDatetime;
+    }
+
+    public String getLastHandlerUser() {
+        return lastHandlerUser;
+    }
+
+    public void setLastHandlerUser(String lastHandlerUser) {
+        this.lastHandlerUser = lastHandlerUser;
+    }
 
     public String getEnvironment() {
         return environment;

@@ -57,12 +57,26 @@ public interface WorkOrderMapper {
      */
     int updateWorkOrderContentById(WorkOrder record);
 
-    int countWorkOrder(@Param("queryPo") QueryCurrentUserWorkOrderPo queryPo);
+    int countWorkOrderByDevelop(@Param("queryPo") QueryCurrentUserWorkOrderPo queryPo);
 
-    List<WorkOrder> queryPageList(@Param("queryPo") QueryCurrentUserWorkOrderPo queryPo
+    List<WorkOrder> queryPageListByDevelop(@Param("queryPo") QueryCurrentUserWorkOrderPo queryPo
             , @Param("index") int index, @Param("pageSize") int pageSize);
 
+    /**
+     * cancel this worker order
+     *
+     * @param record worker entity
+     * @return
+     */
     int cancelWorkOrder(WorkOrder record);
 
-    int updateWorkOrderStatus(int id,int status);
+    /**
+     * update this worker order status
+     *
+     * @param id              Primary key
+     * @param status          status
+     * @param lastHandlerUser last processing work order user nam
+     * @return
+     */
+    int updateWorkOrderStatus(int id, int status, String lastHandlerUser);
 }

@@ -17,5 +17,8 @@ public interface WorkOrderFacade {
 
     ResourcePageRespDto<WorkOrderRespDto> queryCurrentUserWorkOrder(ResourcePageReqDto<QueryCurrentUserWorkOrderReqDto> req);
 
+    ResourcePageRespDto<WorkOrderRespDto> queryCurrentUserWorkOrder2(ResourcePageReqDto<QueryCurrentUserWorkOrderReqDto> req);
+
+
     void cancel(WorkOrderCancelReqDto req);
 }

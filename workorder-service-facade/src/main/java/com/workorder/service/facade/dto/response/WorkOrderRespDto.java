@@ -23,6 +23,8 @@ public class WorkOrderRespDto {
     private Integer status;
     private String statusDes;
     private Integer lastNeedHandlerFlowId;
+    private String handlerUserName;
+    private Date handlerDateTime;
     private Date expectDatetime;
     private String environment;
 

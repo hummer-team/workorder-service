@@ -47,8 +47,8 @@ public class WorkOrderHandlerFlowFacadeImpl extends BaseWorkOrderFacade implemen
     public void handler(WorkOrderHandlerFlowReqDto req) {
         UserContext userContext = UserHolder.getNotNull();
         RoleEnum roleEnum = getCurrentUserRole(userContext);
-        OpEnum opEnum = getOpEnum(req);
-        checkIsAllowOp(userContext, roleEnum, opEnum);
+        OpEnum opEnum = getOpEnum(req, roleEnum);
+        //checkIsAllowOp(userContext, roleEnum, opEnum);
 
         WorkOrder workOrderPo = workOrderMapper.selectByPrimaryKey(req.getWorkOrderId(), null);
         ParameterAssertUtil.assertConditionTrue(workOrderPo != null
@@ -90,16 +90,29 @@ public class WorkOrderHandlerFlowFacadeImpl extends BaseWorkOrderFacade implemen
                 && f.getId().equals(req.getFlowId());
     }
 
-    private OpEnum getOpEnum(WorkOrderHandlerFlowReqDto req) {
+    private OpEnum getOpEnum(WorkOrderHandlerFlowReqDto req, RoleEnum roleEnum) {
         WorkOrderStatusEnum statusEnum = WorkOrderStatusEnum.getByCode(req.getStatus());
-        switch (statusEnum) {
-            case APPROVE_OK:
-            case RETURNED:
-                return OpEnum.APPROVE_WORK_ORDER;
-            case EXECUTED:
-                return OpEnum.EXECUTE_WORK_ORDER;
-            default:
-                throw new AppException(40000, "operation work order status invald");
+        if (roleEnum == RoleEnum.APPROVE) {
+            switch (statusEnum) {
+                case APPROVE_OK:
+                case RETURNED:
+                    return OpEnum.APPROVE_WORK_ORDER;
+                case EXECUTED:
+                default:
+                    throw new AppException(40000, "operation work order status " + statusEnum + "  not allow");
+            }
         }
+        if (roleEnum == RoleEnum.EXECUTE) {
+            switch (statusEnum) {
+                case EXECUTED:
+                case RETURNED:
+                    return OpEnum.EXECUTE_WORK_ORDER;
+                case APPROVE_OK:
+                default:
+                    throw new AppException(40000, "operation work order status " + statusEnum + "  not allow");
+            }
+        }
+
+        throw new AppException(40000, "operation work order status not allow");
     }
 }

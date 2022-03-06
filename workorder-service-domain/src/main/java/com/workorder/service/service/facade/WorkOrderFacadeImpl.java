@@ -20,7 +20,6 @@ import com.workorder.service.facade.dto.request.WorkOrderCreatedReqDto;
 import com.workorder.service.facade.dto.request.WorkOrderEditReqDto;
 import com.workorder.service.facade.dto.response.WorkOrderHandlerFlowRespDto;
 import com.workorder.service.facade.dto.response.WorkOrderRespDto;
-import com.workorder.service.service.domain.OpEnum;
 import com.workorder.service.service.domain.RoleEnum;
 import com.workorder.service.service.domain.WorkOrderStatusEnum;
 import com.workorder.service.service.domain.service.WorkerOrderService;
@@ -128,6 +127,10 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
         return resp;
     }
 
+    @Override
+    public ResourcePageRespDto<WorkOrderRespDto> queryCurrentUserWorkOrder2(ResourcePageReqDto<QueryCurrentUserWorkOrderReqDto> req) {
+        return null;
+    }
 
     @Override
     public ResourcePageRespDto<WorkOrderRespDto> queryCurrentUserWorkOrder(
@@ -137,17 +140,17 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
 
         UserContext userContext = UserHolder.getNotNull();
         RoleEnum roleEnum = getCurrentUserRole(userContext);
-        //checkIsAllowOp(userContext, roleEnum, OpEnum.VIEW_WORK_ORDER);
 
         QueryCurrentUserWorkOrderPo queryPo = ObjectCopyUtils.copy(req.getQueryObject(), QueryCurrentUserWorkOrderPo.class);
         queryPo.setUserId(Integer.parseInt(userContext.getUserId()));
         queryPo.setType(roleEnum.ordinal());
         log.info("user {} query condition {}", userContext.getUserName(), queryPo);
-        int count = workOrderMapper.countWorkOrder(queryPo);
+
+        int count = workOrderMapper.countWorkOrderByDevelop(queryPo);
         if (count <= 0) {
             return ResourcePageRespDto.emptyPage();
         }
-        List<WorkOrder> workOrders = workOrderMapper.queryPageList(queryPo
+        List<WorkOrder> workOrders = workOrderMapper.queryPageListByDevelop(queryPo
                 , (req.getPageNumber() - 1) * req.getPageSize(), req.getPageSize());
 
         List<WorkOrderRespDto> respDtos = ObjectCopyUtils.copyByList(workOrders, WorkOrderRespDto.class);
@@ -167,7 +170,23 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
         }
         respDtos.forEach(r -> r.setStatusDes(WorkOrderStatusEnum.getByCode(r.getStatus()).getDesc()));
         respDtos.forEach(w -> Optional.ofNullable(w.getHandlerFlows()).orElse(Collections.emptyList())
-                .forEach(f -> f.setStatusDes(WorkOrderStatusEnum.getByCode(f.getStatus()).getDesc())));
+                .forEach(f -> {
+                    f.setStatusDes(WorkOrderStatusEnum.getByCode(f.getStatus()).getDesc());
+                }));
+        respDtos.forEach(w -> {
+            Optional<WorkOrderHandlerFlowRespDto> flowRespDto =
+                    Optional.ofNullable(w.getHandlerFlows())
+                            .orElse(Collections.emptyList())
+                            .stream()
+                            .sorted(Comparator.comparing(WorkOrderHandlerFlowRespDto::getLastModifiedDatetime).reversed())
+                            .limit(1)
+                            .findFirst();
+            flowRespDto.ifPresent(f -> {
+                w.setHandlerUserName(f.getHandlerUser());
+                w.setHandlerDateTime(f.getLastModifiedDatetime());
+            });
+        });
+
         return ResourcePageRespDto.builderPage(req.getPageNumber(), req.getPageSize(), count, respDtos);
     }
 

@@ -71,6 +71,7 @@ public class TemplateFacadeImpl extends BaseWorkOrderFacade implements TemplateF
         template.setExecuteUserId(req.getExecuteUserId());
         template.setName(req.getName());
         template.setProjectCode(req.getProjectCode());
+        template.setDescribe(req.getDescribe());
         template.setCreatedUserId(Integer.parseInt(UserHolder.getUserId()));
         try {
             templateMapper.insert(template);

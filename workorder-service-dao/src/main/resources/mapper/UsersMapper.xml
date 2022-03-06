@@ -45,6 +45,7 @@
         <foreach collection="roles" item="item" open="(" close=")" separator=",">
             #{item,jdbcType=VARCHAR}
         </foreach>
+        order by created_datetime desc
     </select>
 
     <select id="selectByUserName" parameterType="java.lang.String" resultMap="BaseResultMap">

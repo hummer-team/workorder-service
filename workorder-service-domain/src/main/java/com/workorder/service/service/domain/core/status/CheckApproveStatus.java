@@ -41,16 +41,14 @@ public class CheckApproveStatus implements CheckStatus {
         WorkOrderHandlerFlow flow = new WorkOrderHandlerFlow();
         flow.setHandlerBatchId(DateUtil.formatNowDate(DateUtil.DateTimeFormat.F7.getValue()));
         if (nextUserId.isPresent()) {
-            flow.setStatus(WorkOrderStatusEnum.WAIT_EXECUTE.getCode());
-            flow.setActionType(WorkOrderStatusEnum.WAIT_EXECUTE.getCode());
-            flow.setTemplateId(workOrderPo.getTemplateId());
+            flow.setStatus(WorkOrderStatusEnum.WAIT_APPROVE.getCode());
+            flow.setActionType(WorkOrderStatusEnum.WAIT_APPROVE.getCode());
             flow.setWorkOrderId(workOrderPo.getId());
             flow.setHandlerUserId(Integer.parseInt(nextUserId.get()));
 
         } else {
             flow.setStatus(WorkOrderStatusEnum.WAIT_EXECUTE.getCode());
             flow.setActionType(WorkOrderStatusEnum.WAIT_EXECUTE.getCode());
-            flow.setTemplateId(workOrderPo.getTemplateId());
             flow.setWorkOrderId(workOrderPo.getId());
             flow.setHandlerUserId(template.getExecuteUserId());
 

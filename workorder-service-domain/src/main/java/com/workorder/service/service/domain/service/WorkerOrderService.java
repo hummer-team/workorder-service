@@ -43,7 +43,6 @@ public class WorkerOrderService {
         flow.setHandlerUserId(approvedUsers.getId());
         flow.setActionType(status.getCode());
         flow.setHandlerUser(approvedUsers.getUserName());
-        flow.setTemplateId(workOrder.getTemplateId());
         flow.setHandlerBatchId(DateUtil.formatNowDate(DateUtil.DateTimeFormat.F7.getValue()));
         handlerFlowMapper.insert(flow);
         return workOrder;
@@ -53,9 +52,13 @@ public class WorkerOrderService {
             , dbName = "workflow")
     public void handlerStatus(WorkOrderHandlerFlow updateStatus, WorkOrderHandlerFlow nextStatus) {
         handlerFlowMapper.updateStatusByPrimaryKey(updateStatus);
-        workOrderMapper.updateWorkOrderStatus(updateStatus.getWorkOrderId(), updateStatus.getStatus());
         if (nextStatus != null) {
+            workOrderMapper.updateWorkOrderStatus(updateStatus.getWorkOrderId()
+                    , nextStatus.getStatus(), nextStatus.getHandlerUser());
             handlerFlowMapper.insert(nextStatus);
+        } else {
+            workOrderMapper.updateWorkOrderStatus(updateStatus.getWorkOrderId()
+                    , updateStatus.getStatus(), updateStatus.getHandlerUser());
         }
     }
 }
