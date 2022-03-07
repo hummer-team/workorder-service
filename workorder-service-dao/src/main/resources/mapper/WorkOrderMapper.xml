@@ -46,11 +46,11 @@
         <result column="cancel_user_id" jdbcType="INTEGER" property="cancelUserId"/>
         <result column="cancel_datetime" jdbcType="INTEGER" property="cancelDatetime"/>
 
+
         <collection property="flowList" javaType="java.util.List"
                     ofType="com.workorder.service.support.model.po.WorkOrderHandlerFlow">
             <id column="flow_id" jdbcType="INTEGER" property="id"/>
             <result column="work_order_id" jdbcType="INTEGER" property="workOrderId"/>
-            <result column="template_id" jdbcType="INTEGER" property="templateId"/>
             <result column="handler_user_id" jdbcType="INTEGER" property="handlerUserId"/>
             <result column="status" jdbcType="INTEGER" property="status"/>
             <result column="action_type" jdbcType="INTEGER" property="actionType"/>
@@ -80,7 +80,8 @@
         <result column="cancel_user_id" jdbcType="INTEGER" property="cancelUserId"/>
         <result column="cancel_datetime" jdbcType="INTEGER" property="cancelDatetime"/>
         <result column="handler_datetime" jdbcType="TIMESTAMP" property="handlerDateTime"/>
-        <result column="handler_user" jdbcType="" property="handlerUserName"/>
+        <result column="handler_user" jdbcType="VARCHAR" property="handlerUserName"/>
+        <result column="flow_id" jdbcType="INTEGER" property="lastNeedHandlerFlowId"/>
     </resultMap>
 
     <sql id="Base_Column_List">
@@ -257,22 +258,32 @@
         where id = #{id,jdbcType=INTEGER} and submit_user_id = #{submitUserId,jdbcType=INTEGER}
     </update>
 
+    <select id="countWorkOrderByOther"
+            parameterType="com.workorder.service.support.model.po.QueryCurrentUserWorkOrderPo"
+            resultType="java.lang.Integer">
+        select count(*) from work_order_handler_flow
+        where 1=1
+        <if test="queryPo.type==2 or queryPo.type==1">
+            and id in (select distinct work_order_id from work_order_handler_flow where handler_user_id =#{queryPo.userId,jdbcType=INTEGER})
+        </if>
+        <if test="queryPo.status!=0">
+            and status=#{queryPo.status}
+        </if>
+        <if test="queryPo.beginDate!=null and queryPo.endDate!=null">
+            and created_datetime BETWEEN #{queryPo.beginDate} and #{queryPo.endDate}
+        </if>
+    </select>
 
     <select id="countWorkOrderByDevelop"
             parameterType="com.workorder.service.support.model.po.QueryCurrentUserWorkOrderPo"
             resultType="java.lang.Integer">
-        SELECT COUNT(DISTINCT wo.id)
+        SELECT COUNT(wo.id)
         from work_order wo
-        inner join
-        work_order_handler_flow fl
-        on wo.id = fl.work_order_id
+
         <where>
             <choose>
                 <when test="queryPo.type==0">
                     wo.submit_user_id=#{queryPo.userId,jdbcType=INTEGER}
-                </when>
-                <when test="queryPo.type==2 or queryPo.type==1">
-                    fl.handler_user_id=#{queryPo.userId,jdbcType=INTEGER}
                 </when>
                 <otherwise>
                     1=1
@@ -326,11 +337,42 @@
     </select>
     -->
 
-    <select id="queryPageListByDevelop" resultMap="BaseWorkOrderPageListMap">
+    <select id="queryPageListByOther" resultMap="BaseWorkOrderPageListMap2">
         select
         wo.id as work_order_id1, wo.title, wo.submit_user_id,wo.status as status1,wo.submit_user, wo.template_id,
-        wo.created_datetime as submit_datetime, wo.affix_list,wo.content,
-        wo.expect_datetime,wo.environment,
+        wo.created_datetime as submit_datetime, wo.affix_list,
+        wo.expect_datetime,wo.environment,t.name,t.project_code,
+        (select created_datetime from work_order_handler_flow where work_order_id=wo.id order by created_datetime desc limit 1) as handler_datetime,
+        (select handler_user from work_order_handler_flow where work_order_id=wo.id order by created_datetime desc limit 1) as handler_user,
+        (select id from work_order_handler_flow where work_order_id=wo.id order by created_datetime desc limit 1) as flow_id
+        from work_order wo
+        inner join template t
+        on wo.template_id=t.id
+        <where>
+            <choose>
+                <when test="queryPo.type==2 or queryPo.type==1">
+                    wo.id in (select distinct work_order_id from work_order_handler_flow where handler_user_id =#{queryPo.userId,jdbcType=INTEGER})
+                </when>
+                <otherwise>
+                    1=1
+                </otherwise>
+            </choose>
+            <if test="queryPo.status!=0">
+                and wo.status=#{queryPo.status}
+            </if>
+            <if test="queryPo.beginDate!=null and queryPo.endDate!=null">
+                and wo.created_datetime BETWEEN #{queryPo.beginDate} and #{queryPo.endDate}
+            </if>
+        </where>
+        order by wo.created_datetime desc
+        limit #{index},#{pageSize}
+    </select>
+
+    <select id="queryPageListByDevelop" resultMap="BaseWorkOrderPageListMap2">
+        select
+        wo.id as work_order_id1, wo.title, wo.submit_user_id,wo.status as status1,wo.submit_user, wo.template_id,
+        wo.created_datetime as submit_datetime, wo.affix_list,
+        wo.expect_datetime,wo.environment,t.name,t.project_code,
         (select created_datetime from work_order_handler_flow where work_order_id=wo.id order by created_datetime desc limit 1) as handler_datetime,
         (select handler_user from work_order_handler_flow where work_order_id=wo.id order by created_datetime desc limit 1) as handler_user
         from work_order wo
@@ -340,9 +382,6 @@
             <choose>
                 <when test="queryPo.type==0">
                     wo.submit_user_id =#{queryPo.userId,jdbcType=INTEGER}
-                </when>
-                <when test="queryPo.type==2 or queryPo.type==1">
-                    fl.handler_user_id=#{queryPo.userId,jdbcType=INTEGER}
                 </when>
                 <otherwise>
                     1=1

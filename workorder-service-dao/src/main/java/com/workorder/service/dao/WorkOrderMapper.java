@@ -3,6 +3,7 @@ package com.workorder.service.dao;
 import com.hummer.dao.annotation.DaoAnnotation;
 import com.workorder.service.support.model.po.QueryCurrentUserWorkOrderPo;
 import com.workorder.service.support.model.po.WorkOrder;
+import com.workorder.service.support.model.po.WorkOrderPagePo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -57,11 +58,15 @@ public interface WorkOrderMapper {
      */
     int updateWorkOrderContentById(WorkOrder record);
 
+    int countWorkOrderByOther(@Param("queryPo") QueryCurrentUserWorkOrderPo queryPo);
+
     int countWorkOrderByDevelop(@Param("queryPo") QueryCurrentUserWorkOrderPo queryPo);
 
-    List<WorkOrder> queryPageListByDevelop(@Param("queryPo") QueryCurrentUserWorkOrderPo queryPo
+    List<WorkOrderPagePo> queryPageListByDevelop(@Param("queryPo") QueryCurrentUserWorkOrderPo queryPo
             , @Param("index") int index, @Param("pageSize") int pageSize);
 
+    List<WorkOrderPagePo> queryPageListByOther(@Param("queryPo") QueryCurrentUserWorkOrderPo queryPo
+            , @Param("index") int index, @Param("pageSize") int pageSize);
     /**
      * cancel this worker order
      *

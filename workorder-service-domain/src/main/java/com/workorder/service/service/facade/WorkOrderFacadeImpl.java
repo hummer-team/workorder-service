@@ -28,6 +28,7 @@ import com.workorder.service.support.model.po.Template;
 import com.workorder.service.support.model.po.Users;
 import com.workorder.service.support.model.po.WorkOrder;
 import com.workorder.service.support.model.po.WorkOrderHandlerFlow;
+import com.workorder.service.support.model.po.WorkOrderPagePo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -146,46 +147,30 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
         queryPo.setType(roleEnum.ordinal());
         log.info("user {} query condition {}", userContext.getUserName(), queryPo);
 
-        int count = workOrderMapper.countWorkOrderByDevelop(queryPo);
-        if (count <= 0) {
-            return ResourcePageRespDto.emptyPage();
+        int count;
+        List<WorkOrderPagePo> workOrders;
+        if (roleEnum == RoleEnum.DEVELOP) {
+            count = workOrderMapper.countWorkOrderByDevelop(queryPo);
+            if (count <= 0) {
+                return ResourcePageRespDto.emptyPage();
+            }
+            workOrders = workOrderMapper.queryPageListByDevelop(queryPo
+                    , (req.getPageNumber() - 1) * req.getPageSize(), req.getPageSize());
+        } else {
+            count = workOrderMapper.countWorkOrderByOther(queryPo);
+            if (count <= 0) {
+                return ResourcePageRespDto.emptyPage();
+            }
+            workOrders = workOrderMapper.queryPageListByOther(queryPo
+                    , (req.getPageNumber() - 1) * req.getPageSize(), req.getPageSize());
         }
-        List<WorkOrder> workOrders = workOrderMapper.queryPageListByDevelop(queryPo
-                , (req.getPageNumber() - 1) * req.getPageSize(), req.getPageSize());
+
 
         List<WorkOrderRespDto> respDtos = ObjectCopyUtils.copyByList(workOrders, WorkOrderRespDto.class);
         for (WorkOrderRespDto dto : respDtos) {
-            List<WorkOrderHandlerFlow> flowList = workOrders.stream()
-                    .filter(f -> f.getId().equals(dto.getId()))
-                    .flatMap(p -> p.getFlowList().stream())
-                    .collect(Collectors.toUnmodifiableList());
-            dto.setHandlerFlows(ObjectCopyUtils.copyByList(flowList, WorkOrderHandlerFlowRespDto.class));
-
-            Optional<WorkOrderHandlerFlow> temp = flowList
-                    .stream()
-                    .sorted(Comparator.comparing(WorkOrderHandlerFlow::getCreatedDatetime).reversed())
-                    .limit(1)
-                    .findFirst();
-            temp.ifPresent(workOrderRespDto -> dto.setLastNeedHandlerFlowId(workOrderRespDto.getId()));
+            dto.setHandlerFlows(Collections.emptyList());
         }
         respDtos.forEach(r -> r.setStatusDes(WorkOrderStatusEnum.getByCode(r.getStatus()).getDesc()));
-        respDtos.forEach(w -> Optional.ofNullable(w.getHandlerFlows()).orElse(Collections.emptyList())
-                .forEach(f -> {
-                    f.setStatusDes(WorkOrderStatusEnum.getByCode(f.getStatus()).getDesc());
-                }));
-        respDtos.forEach(w -> {
-            Optional<WorkOrderHandlerFlowRespDto> flowRespDto =
-                    Optional.ofNullable(w.getHandlerFlows())
-                            .orElse(Collections.emptyList())
-                            .stream()
-                            .sorted(Comparator.comparing(WorkOrderHandlerFlowRespDto::getLastModifiedDatetime).reversed())
-                            .limit(1)
-                            .findFirst();
-            flowRespDto.ifPresent(f -> {
-                w.setHandlerUserName(f.getHandlerUser());
-                w.setHandlerDateTime(f.getLastModifiedDatetime());
-            });
-        });
 
         return ResourcePageRespDto.builderPage(req.getPageNumber(), req.getPageSize(), count, respDtos);
     }

@@ -30,8 +30,7 @@ public class ValidOperationPermissionImpl implements ValidOperationPermission {
 
     @Override
     public void validate(String[] authorityCodes, PermissionAuthorityConditionEnum condition) {
-        OpEnum[] opEnumList = Arrays.stream(authorityCodes).map(OpEnum::getByName).collect(Collectors.toList())
-                .toArray(OpEnum[]::new);
+        OpEnum[] opEnumList = Arrays.stream(authorityCodes).map(OpEnum::getByName).toArray(OpEnum[]::new);
         if (condition != PermissionAuthorityConditionEnum.NONE) {
             Map<OpEnum, Boolean> conditionMap = baseWorkOrderFacade.returnIsAllowOp(opEnumList);
             UserContext userContext = UserHolder.getNotNull();

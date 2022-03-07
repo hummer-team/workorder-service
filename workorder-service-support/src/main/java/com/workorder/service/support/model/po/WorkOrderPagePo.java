@@ -5,6 +5,15 @@ import java.util.Date;
 public class WorkOrderPagePo extends WorkOrder {
     private Date handlerDateTime;
     private String handlerUserName;
+    private Integer lastNeedHandlerFlowId;
+
+    public Integer getLastNeedHandlerFlowId() {
+        return lastNeedHandlerFlowId;
+    }
+
+    public void setLastNeedHandlerFlowId(Integer lastNeedHandlerFlowId) {
+        this.lastNeedHandlerFlowId = lastNeedHandlerFlowId;
+    }
 
     public Date getHandlerDateTime() {
         return handlerDateTime;
