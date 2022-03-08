@@ -17,3 +17,5 @@ a.txt
 db
 .flattened-pom.xml
 .DS_Store
+
+application-local.properties
