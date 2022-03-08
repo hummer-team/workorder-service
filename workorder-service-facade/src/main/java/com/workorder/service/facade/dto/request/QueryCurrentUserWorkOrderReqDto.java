@@ -14,5 +14,8 @@ public class QueryCurrentUserWorkOrderReqDto {
     private Date beginDate;
     @NotNull(message = "end date can't null")
     private Date endDate;
+
     private String environment;
+    private Integer templateId;
+    private String workOrderName;
 }

@@ -10,6 +10,6 @@ public class WorkOrderCancelReqDto {
     @NotNull(message = "work order id can't null")
     private Integer workOrderId;
     @NotNull(message = "reason can't null")
-    @Length(min = 10, max = 200, message = "reason length rang is 10~200")
+    @Length(min = 5, max = 200, message = "reason length rang is 5~200")
     private String reason;
 }

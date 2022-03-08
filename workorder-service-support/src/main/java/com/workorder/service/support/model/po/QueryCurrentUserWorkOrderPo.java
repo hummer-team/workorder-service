@@ -11,4 +11,7 @@ public class QueryCurrentUserWorkOrderPo {
     private Date endDate;
     private Integer userId;
     private Integer type;
+
+    private Integer templateId;
+    private String workOrderName;
 }

@@ -272,6 +272,12 @@
         <if test="queryPo.beginDate!=null and queryPo.endDate!=null">
             and created_datetime BETWEEN #{queryPo.beginDate} and #{queryPo.endDate}
         </if>
+        <if test="queryPo.templateId !=null and queryPo.templateId !=0">
+            and wo.template_id = #{queryPo.templateId}
+        </if>
+        <if test="queryPo.workOrderName!=null">
+            and wo.title like concat(#{queryPo.workOrderName},'%')
+        </if>
     </select>
 
     <select id="countWorkOrderByDevelop"
@@ -294,6 +300,12 @@
             </if>
             <if test="queryPo.beginDate!=null and queryPo.endDate!=null">
                 and wo.created_datetime BETWEEN #{queryPo.beginDate} and #{queryPo.endDate}
+            </if>
+            <if test="queryPo.templateId !=null and queryPo.templateId !=0">
+                and wo.template_id = #{queryPo.templateId}
+            </if>
+            <if test="queryPo.workOrderName!=null">
+                and wo.title like concat(#{queryPo.workOrderName},'%')
             </if>
         </where>
     </select>
@@ -363,6 +375,12 @@
             <if test="queryPo.beginDate!=null and queryPo.endDate!=null">
                 and wo.created_datetime BETWEEN #{queryPo.beginDate} and #{queryPo.endDate}
             </if>
+            <if test="queryPo.templateId !=null and queryPo.templateId !=0">
+                and wo.template_id = #{queryPo.templateId}
+            </if>
+            <if test="queryPo.workOrderName!=null">
+                and wo.title like concat(#{queryPo.workOrderName},'%')
+            </if>
         </where>
         order by wo.created_datetime desc
         limit #{index},#{pageSize}
@@ -392,6 +410,12 @@
             </if>
             <if test="queryPo.beginDate!=null and queryPo.endDate!=null">
                 and wo.created_datetime BETWEEN #{queryPo.beginDate} and #{queryPo.endDate}
+            </if>
+            <if test="queryPo.templateId !=null and queryPo.templateId !=0">
+                and wo.template_id = #{queryPo.templateId}
+            </if>
+            <if test="queryPo.workOrderName!=null">
+                and wo.title like concat(#{queryPo.workOrderName},'%')
             </if>
         </where>
         order by wo.created_datetime desc

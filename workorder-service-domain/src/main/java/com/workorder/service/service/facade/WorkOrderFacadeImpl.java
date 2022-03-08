@@ -36,10 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * @author guo.li
@@ -191,10 +188,10 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
         }
 
         List<WorkOrderHandlerFlow> flowList = handlerFlowMapper.selectByWorkOrderId(req.getWorkOrderId());
-        if (CollectionUtils.isNotEmpty(flowList)
+        if (CollectionUtils.isEmpty(flowList)
                 || flowList.stream().anyMatch(f ->
                 WorkOrderStatusEnum.getByCode(f.getStatus()) == WorkOrderStatusEnum.WAIT_APPROVE
-                        || WorkOrderStatusEnum.getByCode(f.getStatus()) == WorkOrderStatusEnum.RETURNED)
+                        || WorkOrderStatusEnum.getByCode(f.getStatus()) == WorkOrderStatusEnum.WAIT_EXECUTE)
         ) {
             WorkOrder workOrder = new WorkOrder();
             workOrder.setId(req.getWorkOrderId());
@@ -203,7 +200,9 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
             workOrder.setCancelUserId(Integer.parseInt(userContext.getUserId()));
             workOrderMapper.cancelWorkOrder(workOrder);
             log.info("user {} cancel work order {} reason {}", userContext.getUserName(), req.getWorkOrderId(), req.getReason());
+            return;
         }
+
 
         throw new AppException(40006, "Only in the status of pending approval or rejected can it be cancelled");
     }

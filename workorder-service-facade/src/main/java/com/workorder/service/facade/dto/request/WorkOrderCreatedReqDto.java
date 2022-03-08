@@ -21,10 +21,8 @@ public class WorkOrderCreatedReqDto {
     private Integer templateId;
     @NotEmpty(message = "work order content can't null")
     private String content;
-    /**
-     * affix is Optional
-     */
-    private Map<String, byte[]> affixList;
+
+
     @NotNull(message = "expect completion time can't null")
     private Date expectDatetime;
     @NotEmpty(message = "environment type can't null")
