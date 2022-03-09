@@ -119,6 +119,7 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
         Template template = templateMapper.selectByPrimaryKey(workOrder.getTemplateId());
         resp.setTemplateName(template.getName());
         resp.setProjectCode(template.getProjectCode());
+        resp.setDescribe(template.getDescribe());
         resp.setHandlerFlows(ObjectCopyUtils.copyByList(flowList, WorkOrderHandlerFlowRespDto.class));
         resp.getHandlerFlows().forEach(f -> f.setStatusDes(WorkOrderStatusEnum.getByCode(f.getStatus()).getDesc()));
 

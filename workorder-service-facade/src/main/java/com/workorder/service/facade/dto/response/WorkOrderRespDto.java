@@ -27,6 +27,7 @@ public class WorkOrderRespDto {
     private Date handlerDateTime;
     private Date expectDatetime;
     private String environment;
+    private String describe;
 
     private List<WorkOrderHandlerFlowRespDto> handlerFlows;
 }
