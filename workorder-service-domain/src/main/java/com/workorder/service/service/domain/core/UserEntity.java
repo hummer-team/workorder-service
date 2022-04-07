@@ -19,6 +19,7 @@ public class UserEntity {
         userContext.setUserId(String.valueOf(users.getId()));
         Map<String, Object> map = new ConcurrentHashMap<>(1);
         map.put("role", users.getRoleCode());
+        map.put("template", users.getTemplateIds());
         userContext.setData(map);
         userContext.saveContext(true);
         return userContext;

@@ -60,6 +60,17 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
         if (req.getExpectDatetime().before(DateUtil.now())) {
             throw new AppException(40005, "expect datetime must after now");
         }
+
+        UserContext userContext = UserHolder.getNotNull();
+        String templates = (String) userContext.getData().get("template");
+        if (StringUtils.isEmpty(templates)) {
+            throw new AppException(40008, "No operation authority");
+        }
+        boolean noOp = !Splitter.on(",").splitToList(templates).contains(String.valueOf(req.getTemplateId()));
+        if (noOp) {
+            throw new AppException(40008, "No operation authority!，please concat admin");
+        }
+
         Template template = templateMapper.selectByPrimaryKey(req.getTemplateId());
         if (template == null || StringUtils.isEmpty(template.getApproveUserIds()) || template.getExecuteUserId() == null) {
             throw new AppException(40004, String.format("template %s not find or template config error,please check"
@@ -76,7 +87,6 @@ public class WorkOrderFacadeImpl extends BaseWorkOrderFacade implements WorkOrde
             throw new AppException(40007, String.format("approval user %s No approval authority", approvalUsers.getUserName()));
         }
 
-        UserContext userContext = UserHolder.getNotNull();
 
         WorkOrder workOrder = workerOrderService.submitWorkOrder(req, userContext, WorkOrderStatusEnum.WAIT_APPROVE, approvalUsers);
         log.info("user {} work order {} created success ", userContext.getUserName(), req.getTitle());
