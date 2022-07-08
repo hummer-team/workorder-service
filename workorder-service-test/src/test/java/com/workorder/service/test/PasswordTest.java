@@ -38,6 +38,6 @@ public class PasswordTest {
 
         Assert.assertEquals(true, lst.contains(String.valueOf(1)));
         Assert.assertEquals(false, lst.contains("01"));
-
+        System.out.println(((100 - 40) + (double) (80 * 40) / 100.0) / 100.0);
     }
 }

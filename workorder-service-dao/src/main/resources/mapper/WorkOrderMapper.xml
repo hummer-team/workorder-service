@@ -264,7 +264,7 @@
         select count(distinct wo.id) from work_order_handler_flow as f
         inner join work_order as wo
         on f.work_order_id=wo.id
-        where 1=1
+        where wo.is_delete=0
         <if test="queryPo.type==2 or queryPo.type==1">
             and wo.id in (select distinct work_order_id from work_order_handler_flow where handler_user_id=#{queryPo.userId,jdbcType=INTEGER})
         </if>
@@ -309,7 +309,11 @@
             <if test="queryPo.workOrderName!=null">
                 and wo.title like concat(#{queryPo.workOrderName},'%')
             </if>
+            <if test="1==1">
+                and wo.is_delete=0
+            </if>
         </where>
+
     </select>
     <!--old query-->
     <!--
@@ -387,6 +391,9 @@
             <if test="queryPo.workOrderName!=null">
                 and wo.title like concat(#{queryPo.workOrderName},'%')
             </if>
+            <if test="1==1">
+                and wo.is_delete=0
+            </if>
         </where>
         order by wo.created_datetime desc
         limit #{index},#{pageSize}
@@ -424,6 +431,9 @@
             </if>
             <if test="queryPo.workOrderName!=null">
                 and wo.title like concat(#{queryPo.workOrderName},'%')
+            </if>
+            <if test="1==1">
+                 and wo.is_delete=0
             </if>
         </where>
         order by wo.created_datetime desc
